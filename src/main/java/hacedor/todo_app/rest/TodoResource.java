@@ -1,5 +1,6 @@
 package hacedor.todo_app.rest;
 
+import hacedor.todo_app.domain.Todo;
 import hacedor.todo_app.model.TodoDTO;
 import hacedor.todo_app.service.TodoService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,9 +41,9 @@ public class TodoResource {
 
     @PostMapping
     @ApiResponse(responseCode = "201")
-    public ResponseEntity<Long> createTodo(@RequestBody @Valid final TodoDTO todoDTO) {
-        final Long createdId = todoService.create(todoDTO);
-        return new ResponseEntity<>(createdId, HttpStatus.CREATED);
+    public ResponseEntity<Todo> createTodo(@RequestBody @Valid final TodoDTO todoDTO) {
+        final Todo createdTodo = todoService.create(todoDTO);
+        return new ResponseEntity<>(createdTodo, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

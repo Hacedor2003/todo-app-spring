@@ -1,13 +1,15 @@
 package hacedor.todo_app.service;
 
 import hacedor.todo_app.domain.Todo;
+import hacedor.todo_app.domain.TodoStatus;
 import hacedor.todo_app.model.TodoDTO;
 import hacedor.todo_app.repos.TodoRepository;
 import hacedor.todo_app.util.NotFoundException;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class TodoService {
@@ -31,10 +33,10 @@ public class TodoService {
                 .orElseThrow(NotFoundException::new);
     }
 
-    public Long create(final TodoDTO todoDTO) {
+    public Todo create(final TodoDTO todoDTO) {
         final Todo todo = new Todo();
         mapToEntity(todoDTO, todo);
-        return todoRepository.save(todo).getId();
+        return todoRepository.save(todo);
     }
 
     public void update(final Long id, final TodoDTO todoDTO) {
@@ -49,21 +51,22 @@ public class TodoService {
     }
 
     private TodoDTO mapToDTO(final Todo todo, final TodoDTO todoDTO) {
-        todoDTO.setId(todo.getId());
         todoDTO.setTitle(todo.getTitle());
         todoDTO.setDescription(todo.getDescription());
-        todoDTO.setCreatedDate(todo.getCreatedDate());
         todoDTO.setEta(todo.getEta());
-        todoDTO.setFinished(todo.getFinished());
+        todo.setCreatedDate(LocalDateTime.now());
+        todo.setFinished(false);
+        todo.setTodoStatus(TodoStatus.ON_TIME);
         return todoDTO;
     }
 
     private Todo mapToEntity(final TodoDTO todoDTO, final Todo todo) {
         todo.setTitle(todoDTO.getTitle());
         todo.setDescription(todoDTO.getDescription());
-        todo.setCreatedDate(todoDTO.getCreatedDate());
         todo.setEta(todoDTO.getEta());
-        todo.setFinished(todoDTO.getFinished());
+        todo.setCreatedDate(LocalDateTime.now());
+        todo.setFinished(false);
+        todo.setTodoStatus(TodoStatus.ON_TIME);
         return todo;
     }
 
