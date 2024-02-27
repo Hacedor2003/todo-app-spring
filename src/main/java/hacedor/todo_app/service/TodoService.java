@@ -51,12 +51,12 @@ public class TodoService {
     }
 
     private TodoDTO mapToDTO(final Todo todo, final TodoDTO todoDTO) {
+        todoDTO.setId(todo.getId());
         todoDTO.setTitle(todo.getTitle());
         todoDTO.setDescription(todo.getDescription());
+        todoDTO.setCreatedDate(todo.getCreatedDate());
         todoDTO.setEta(todo.getEta());
-        todo.setCreatedDate(LocalDateTime.now());
-        todo.setFinished(false);
-        todo.setTodoStatus(TodoStatus.ON_TIME);
+        todoDTO.setFinished(todo.getFinished());
         return todoDTO;
     }
 
