@@ -1,15 +1,18 @@
 package hacedor.todo_app.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
 import hacedor.todo_app.domain.Todo;
 import hacedor.todo_app.domain.TodoStatus;
+import hacedor.todo_app.mappers.Mappers;
 import hacedor.todo_app.model.TodoDTO;
 import hacedor.todo_app.repos.TodoRepository;
 import hacedor.todo_app.util.NotFoundException;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 @Service
 public class TodoService {
@@ -20,54 +23,44 @@ public class TodoService {
         this.todoRepository = todoRepository;
     }
 
-    public List<TodoDTO> findAll() {
-        final List<Todo> todos = todoRepository.findAll(Sort.by("id"));
-        return todos.stream()
-                .map(todo -> mapToDTO(todo, new TodoDTO()))
-                .toList();
+    public List<Todo> findAll() {
+        return this.todoRepository.findAll();
     }
 
-    public TodoDTO get(final Long id) {
+    public Todo getById(final Long id) {
         return todoRepository.findById(id)
-                .map(todo -> mapToDTO(todo, new TodoDTO()))
                 .orElseThrow(NotFoundException::new);
+    }
+
+    public List<Todo> findAllByTodoStatus(TodoStatus status) {
+        return this.todoRepository.findAllByTodoStatus(status);
     }
 
     public Todo create(final TodoDTO todoDTO) {
         final Todo todo = new Todo();
-        mapToEntity(todoDTO, todo);
+        Mappers.mapToEntity(todoDTO, todo);
         return todoRepository.save(todo);
     }
 
     public void update(final Long id, final TodoDTO todoDTO) {
         final Todo todo = todoRepository.findById(id)
                 .orElseThrow(NotFoundException::new);
-        mapToEntity(todoDTO, todo);
+        Mappers.mapToEntity(todoDTO, todo);
         todoRepository.save(todo);
+    }
+
+    @Transactional
+    public void updateTodoAsFinished(Long id) {
+        Optional<Todo> optionalTodo = this.todoRepository.findById(id);
+        if (optionalTodo.isEmpty()) {
+            throw new hacedor.todo_app.exceptions.ToDoExceptions("Todo not found", HttpStatus.NOT_FOUND);
+        }
+
+        this.todoRepository.markTodoAsFinished(id);
     }
 
     public void delete(final Long id) {
         todoRepository.deleteById(id);
-    }
-
-    private TodoDTO mapToDTO(final Todo todo, final TodoDTO todoDTO) {
-        todoDTO.setId(todo.getId());
-        todoDTO.setTitle(todo.getTitle());
-        todoDTO.setDescription(todo.getDescription());
-        todoDTO.setCreatedDate(todo.getCreatedDate());
-        todoDTO.setEta(todo.getEta());
-        todoDTO.setFinished(todo.getFinished());
-        return todoDTO;
-    }
-
-    private Todo mapToEntity(final TodoDTO todoDTO, final Todo todo) {
-        todo.setTitle(todoDTO.getTitle());
-        todo.setDescription(todoDTO.getDescription());
-        todo.setEta(todoDTO.getEta());
-        todo.setCreatedDate(LocalDateTime.now());
-        todo.setFinished(false);
-        todo.setTodoStatus(TodoStatus.ON_TIME);
-        return todo;
     }
 
 }

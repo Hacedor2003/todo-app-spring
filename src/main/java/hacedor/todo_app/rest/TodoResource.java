@@ -1,6 +1,7 @@
 package hacedor.todo_app.rest;
 
 import hacedor.todo_app.domain.Todo;
+import hacedor.todo_app.domain.TodoStatus;
 import hacedor.todo_app.model.TodoDTO;
 import hacedor.todo_app.service.TodoService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequestMapping(value = "/api/todos", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TodoResource {
@@ -30,13 +30,18 @@ public class TodoResource {
     }
 
     @GetMapping
-    public ResponseEntity<List<TodoDTO>> getAllTodos() {
+    public ResponseEntity<List<Todo>> getAllTodos() {
         return ResponseEntity.ok(todoService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TodoDTO> getTodo(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(todoService.get(id));
+    public ResponseEntity<Todo> getTodo(@PathVariable(name = "id") final Long id) {
+        return ResponseEntity.ok(todoService.getById(id));
+    }
+
+    @GetMapping("/status/{status}")
+    public List<Todo> findAllbyStatus(@PathVariable("status") TodoStatus status) {
+        return this.todoService.findAllByTodoStatus(status);
     }
 
     @PostMapping
@@ -50,6 +55,12 @@ public class TodoResource {
     public ResponseEntity<Long> updateTodo(@PathVariable(name = "id") final Long id,
             @RequestBody @Valid final TodoDTO todoDTO) {
         todoService.update(id, todoDTO);
+        return ResponseEntity.ok(id);
+    }
+
+    @PutMapping("/mark_as_finished/{id}")
+    public ResponseEntity<Long> updateStatusTodo(@PathVariable(name = "id") final Long id) {
+        todoService.updateTodoAsFinished(id);
         return ResponseEntity.ok(id);
     }
 
